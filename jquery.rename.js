@@ -4,57 +4,59 @@
 	$.fn.rename = function(settings) {
 	
 		settings = $.extend({
-			editEvent:"dblclick"
+		    allowEmpty: false,
+		    child:null,
+			editEvent:"dblclick",
+			inputClass:"renameText",
+			onRenameEnd: null,
+			onRenameTest: null
 		},settings);
 		
-		$(this).prop("rename",false);
+		// Functions to handle creating and destroying rename inputs
+		var renameOn = function(el) {
+		    if($(el).children("."+settings.inputClass).length > 0) {
+		        return false;
+		    } else {
+		        var innerText = $(el).text();
+		        $(el).html("<input type='text' class='"+settings.inputClass+"' original-val='"+innerText+"' value='"+innerText+"'></input>");
+		        $($(el).children("."+settings.inputClass)[0]).focus();
+		    }
+		};
 		
-		$("span").on(settings.editEvent, this, function() {
+		var renameOff = function(el) {
+		    if($(el).children("."+settings.inputClass).length == 0) {
+		        return false;
+		    } 
+		    
+            var innerText = $($(el).children("."+settings.inputClass)[0]).val();
+            
+            if(innerText == "" && !settings.allowEmpty) {return false;}
+            if(settings.onRenameTest && !settings.onRenameTest(el, innerText)) {return false;}
+            $(el).text(innerText);
+            
+            if(settings.onRenameEnd) onRenameEnd(el, innerText);
+		    
+		};
 		
-			if(!$(this).prop("rename")) {
+		if(settings.child) {
+		    $(this).on(settings.editEvent, settings.child, function() {
+		        renameOn(this);
+		    });
+		} else {
+		    $(this).on(settings.editEvent, function() {
+		        renameOn(this);
+		    });
+		}
 		
-				var val = $(this).html(); 
-				$(this).html("<input type = 'text' class = 'renameText' value="+val+"></input>");
-				$(".renameText").focus();
-				
-				$(this).prop("rename",true);
-			
-			}
-			
-		});
-		
-		$("span").on("keydown", this, function(e) {
-		
-			var code = (e.keyCode ? e.keyCode : e.which);
-			if(code === 13) {
-		
-				if($(".renameText").attr("value") === "") {
-					$(this).html("default");
-				}
-				else {
-					$(this).html($(".renameText").val());
-				}
-				
-				$(this).prop("rename",false);
-				
-			}
-			
-		});
-		
-		// Have to use live because on doesn't work
-		var renameThis = this;
-		$(".renameText").live("blur",function() {
-		
-			if($(renameThis).prop("rename")) {
-				if($(".renameText").attr("value") === "") {
-					$(renameThis).html("default");
-				}
-				else {
-					$(renameThis).html($(".renameText").val());
-				}
-				$(renameThis).prop("rename",false);
-			}
-		});
+		$(this).on("keydown", (settings.child || "" ) + " ." + settings.inputClass, function(e) {
+            var code = (e.keyCode ? e.keyCode : e.which);
+            if(code === 13) {
+                renameOff($(this).parent()[0]);
+            }
+        });
+        $(this).on("blur", (settings.child || "") + " ." + settings.inputClass, function(e) {
+            renameOff($(this).parent()[0]);
+        });
 		
 	}
 
