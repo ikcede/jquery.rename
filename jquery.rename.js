@@ -34,7 +34,7 @@
             if(settings.onRenameTest && !settings.onRenameTest(el, innerText)) {return false;}
             $(el).text(innerText);
             
-            if(settings.onRenameEnd) onRenameEnd(el, innerText);
+            if(settings.onRenameEnd) settings.onRenameEnd(el, innerText);
 		    
 		};
 		
