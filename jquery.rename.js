@@ -51,7 +51,7 @@
 		$(this).on("keydown", (settings.child || "" ) + " ." + settings.inputClass, function(e) {
             var code = (e.keyCode ? e.keyCode : e.which);
             if(code === 13) {
-                renameOff($(this).parent()[0]);
+                $(this).blur();
             }
         });
         $(this).on("blur", (settings.child || "") + " ." + settings.inputClass, function(e) {
